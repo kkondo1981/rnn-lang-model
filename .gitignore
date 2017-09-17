@@ -1,0 +1,31 @@
+# to ignore intermediate output files and so on
+*.*#
+*.pyc
+*.npy
+*.xml
+
+# to ignore generated corpus and model files
+*.mm*
+*.dic*
+*.tfidf*
+*.lsi*
+*.lda*
+*.w2v*
+*.d2v*
+*.phrases*
+*.npy
+*.hdf5
+
+# to ignore outputs of scripts
+*.tmp*
+*.log*
+*.res*
+*.out*
+*.csv
+
+# to ignore local files
+/local_*
+
+# to ignore model dir
+/model/
+/data/

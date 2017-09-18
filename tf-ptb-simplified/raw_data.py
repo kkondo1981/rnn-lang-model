@@ -14,8 +14,6 @@ import collections
 
 import tensorflow as tf
 
-import confing
-
 
 TRAIN_PATH = './data/ptb/simple-examples/data/ptb.train.txt'
 VALID_PATH = './data/ptb/simple-examples/data/ptb.valid.txt'

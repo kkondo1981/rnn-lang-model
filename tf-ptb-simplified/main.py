@@ -8,6 +8,7 @@ import time
 import numpy as np
 import tensorflow as tf
 from tensorflow.python.client import device_lib
+from tensorflow.contrib.tensorboard.plugins import projector
 
 import config as conf
 import raw_data
@@ -73,12 +74,26 @@ def create_model(mode_name, config, data, initializer):
         return m
 
 
+def set_embedding_visualization():
+    print('Saving vocab file to {}.'.format(raw_data.VOCAB_PATH))
+    raw_data.save_vocab()
+    summary_writer = tf.summary.FileWriter(LOGDIR_PATH)
+    config = projector.ProjectorConfig()
+    embedding = config.embeddings.add()
+    embedding.tensor_name = 'embedding'
+    embedding.metadata_path = raw_data.VOCAB_PATH
+    projector.visualize_embeddings(summary_writer, config)
+
+
 def main(_):
     # 入力ファイルからraw dataを読み込む
     train_data, valid_data, test_data, _ = raw_data.get_raw_data()
 
     # 各種設定（config: Train&Valid用, eval_config: Test用）
     config, eval_config = conf.get_config()
+
+    # 埋め込み行列の可視化設定
+    set_embedding_visualization()
 
     # 計算グラフの構築
     with tf.Graph().as_default():
@@ -107,7 +122,7 @@ def main(_):
             test_perplexity = run_epoch(session, mtest)
             print('Test Perplexity: {:.3f}'.format(test_perplexity))
 
-            print("Saving model to {}.".format(SAVE_PATH))
+            print('Saving model to {}.'.format(SAVE_PATH))
             sv.saver.save(session, SAVE_PATH + 'tf-ptb', global_step=sv.global_step)
 
 

@@ -9,18 +9,11 @@ import numpy as np
 import tensorflow as tf
 from tensorflow.python.client import device_lib
 
-import util
-
-import gpu
 import config as conf
 import raw_data
 from rnn_language_model import RNNLanguageModel as Model
 from rnn_language_model_input import RNNLanguageModelInput as Input
 
-
-# GPU info
-GPUS = [x.name for x in device_lib.list_local_devices() if x.device_type == "GPU"]
-NUM_GPUS = len(GPUS)
 
 # PATHs
 LOGDIR_PATH = './log/tf-ptb/'
@@ -54,8 +47,7 @@ def run_epoch(session, model, eval_op=None, verbose=False):
         if verbose and step % (model.input.epoch_size // 10) == 10:
             print("%.3f perplexity: %.3f speed: %.0f wps" %
                   (step * 1.0 / model.input.epoch_size, np.exp(costs / iters),
-                   iters * model.input.batch_size * max(1, NUM_GPUS) /
-                   (time.time() - start_time)))
+                   iters * model.input.batch_size / (time.time() - start_time)))
 
     return np.exp(costs / iters)
 
@@ -83,10 +75,6 @@ def create_model(mode_name, config, data, initializer):
 
 
 def main(_):
-    # 実行には１つ以上のGPUを想定
-    if NUM_GPUS < 1:
-        raise ValueError("Your machine has only %d gpus < 1" % NUM_GPUS)
-
     # 入力ファイルからraw dataを読み込む
     train_data, valid_data, test_data, _ = raw_data.get_raw_data()
 

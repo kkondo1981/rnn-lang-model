@@ -3,6 +3,7 @@
 simplified version of 'ptb_word_lm.py' medium model
 """
 
+import os
 import time
 
 import numpy as np
@@ -87,7 +88,7 @@ def set_embedding_visualization(name):
         config = projector.ProjectorConfig()
         embedding = config.embeddings.add()
         embedding.tensor_name = embedding_var.name
-        embedding.metadata_path = vocab_path
+        embedding.metadata_path = os.path.abspath(vocab_path)
         projector.visualize_embeddings(summary_writer, config)
 
 

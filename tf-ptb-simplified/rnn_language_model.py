@@ -139,65 +139,6 @@ class RNNLanguageModel(object):
         session.run(self._lr_update, feed_dict={self._new_lr: lr_value})
 
 
-    def export_ops(self, name):
-        """Exports ops to collections."""
-        self._name = name
-
-        # exportする演算のdictに目的関数を追加
-        ops = {'{}/{}'.format(self._name, "cost"): self._cost}
-
-        # self._is_training=Trueの場合には、learning rate関係も追加
-        if self._is_training:
-            ops.update(lr=self._lr, new_lr=self._new_lr, lr_update=self._lr_update)
-
-        # opsの各要素をコレクションに追加
-        for name, op in ops.items():
-            tf.add_to_collection(name, op)
-
-        # RNNの初期状態をコレクションに追加
-        self._initial_state_name = '{}/{}'.format(self._name, "initial")
-        for state_tuple in self._initial_state:
-            # c, hはLSTMStateTupleの各要素のエイリアス
-            # https://www.tensorflow.org/versions/r1.2/api_docs/python/tf/contrib/rnn/LSTMStateTuple
-            tf.add_to_collection(self._initial_state_name, state_tuple.c)
-            tf.add_to_collection(self._initial_state_name, state_tuple.h)
-
-        # RNNの最終状態をコレクションに追加
-        self._final_state_name = '{}/{}'.format(self._name, "final")
-        for state_tuple in self._final_state:
-            # c, hはLSTMStateTupleの各要素のエイリアス
-            # https://www.tensorflow.org/versions/r1.2/api_docs/python/tf/contrib/rnn/LSTMStateTuple
-            tf.add_to_collection(self._final_state_name, state_tuple.c)
-            tf.add_to_collection(self._final_state_name, state_tuple.h)
-
-
-    def _import_state_tuples(self, state_tuples, name, num_replicas):
-        restored = []
-        for i in range(len(state_tuples) * num_replicas):
-            c = tf.get_collection_ref(name)[2 * i + 0]
-            h = tf.get_collection_ref(name)[2 * i + 1]
-            restored.append(tf.contrib.rnn.LSTMStateTuple(c, h))
-        return tuple(restored)
-
-
-    def import_ops(self, num_gpus):
-        """Imports ops from collections."""
-        # opsを復元
-        if self._is_training:
-            self._train_op = tf.get_collection_ref("train_op")[0]
-            self._lr = tf.get_collection_ref("lr")[0]
-            self._new_lr = tf.get_collection_ref("new_lr")[0]
-            self._lr_update = tf.get_collection_ref("lr_update")[0]
-        self._cost = tf.get_collection_ref('{}/{}'.format(self._name, "cost"))[0]
-
-        # RNNの初期状態、最終状態を復元
-        num_replicas = num_gpus if self._name == "Train" else 1
-        self._initial_state = self._import_state_tuples(
-            self._initial_state, self._initial_state_name, num_replicas)
-        self._final_state = self._import_state_tuples(
-            self._final_state, self._final_state_name, num_replicas)
-
-
     # accessors
 
     @property
@@ -228,13 +169,3 @@ class RNNLanguageModel(object):
     @property
     def train_op(self):
         return self._train_op
-
-
-    @property
-    def initial_state_name(self):
-        return self._initial_state_name
-
-
-    @property
-    def final_state_name(self):
-        return self._final_state_name

@@ -29,8 +29,8 @@ class MediumConfig(object):
     num_layers = 2
     num_steps = 35
     hidden_size = 650
-    max_epoch = 6
-    max_max_epoch = 39
+    decreasing_learning_rate_after = 6  # 6エポック後に学習レートを減衰開始
+    max_epoch = 39
     keep_prob = 0.5
     lr_decay = 0.8
     batch_size = 20
@@ -40,4 +40,8 @@ class MediumConfig(object):
 
 def get_config():
     """Get model config."""
-    return MediumConfig()
+    config = MediumConfig()
+    eval_config = MediumConfig()
+    eval_config.batch_size = 1
+    eval_config.num_steps = 1
+    return config, eval_config

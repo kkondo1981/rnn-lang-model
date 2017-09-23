@@ -12,14 +12,14 @@ import util
 
 from tensorflow.python.client import device_lib
 
-import config
+import config as conf
 import raw_data
 from rnn_language_model import RNNLanguageModel as Model
 from rnn_language_model_input import RNNLanguageModelInput as Input
 
 
 LOGDIR_PATH = './log/tf-ptb/'
-SAVE_PATH = './model/tf-ptb/'
+SAVE_PATH = './model/'
 
 
 def run_epoch(session, model, num_gpus, eval_op=None, verbose=False):
@@ -61,8 +61,9 @@ def run_epoch(session, model, num_gpus, eval_op=None, verbose=False):
 def main(_):
     # GPU数が1より小さい場合には終了
     gpus = [x.name for x in device_lib.list_local_devices() if x.device_type == "GPU"]
-    if len(gpus) < 1:
-        raise ValueError("Your machine has only %d gpus < 1" % len(gpus))
+    num_gpus = len(gpus)
+    if num_gpus < 1:
+        raise ValueError("Your machine has only %d gpus < 1" % num_gpus)
 
     # 入力ファイルからraw dataを読み込む
     train_data, valid_data, test_data, _ = raw_data.get_raw_data()
@@ -70,8 +71,8 @@ def main(_):
     # RNNの設定を取得。
     # configはTrain, Validモデル用。
     # eval_configはTestモデル用で、バッチもステップも1。
-    config = config.get_config()
-    eval_config = config.get_config()
+    config = conf.get_config()
+    eval_config = conf.get_config()
     eval_config.batch_size = 1
     eval_config.num_steps = 1
 
@@ -118,7 +119,7 @@ def main(_):
         # 計算グラフをimport
         tf.train.import_meta_graph(metagraph)
         for model in models.values():
-            model.import_ops()
+            model.import_ops(num_gpus)
 
         # Sessionを構築→学習実行
         sv = tf.train.Supervisor(logdir=LOGDIR_PATH)
@@ -138,7 +139,7 @@ def main(_):
             print("Test Perplexity: %.3f" % test_perplexity)
 
             print("Saving model to %s." % SAVE_PATH)
-            sv.saver.save(session, SAVE_PATH, global_step=sv.global_step)
+            sv.saver.save(session, SAVE_PATH + 'tf-ptb', global_step=sv.global_step)
 
 
 if __name__ == "__main__":

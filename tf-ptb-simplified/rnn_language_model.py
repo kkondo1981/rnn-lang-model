@@ -103,10 +103,10 @@ class RNNLanguageModel(object):
 
         # クロスエントロピー計算。
         # 結果は長さnum_stepsの1階テンソル（バッチ方向は平均化）
-        loss = loss.rnn_loss(logits, y)
+        rnn_loss = loss.rnn_loss(logits, input_.y)
 
         # コスト更新（コストは勾配計算の目的関数として使用）
-        self._cost = tf.reduce_sum(loss)
+        self._cost = tf.reduce_sum(rnn_loss)
         self._final_state = state
 
         # 以下は学習時専用
@@ -171,7 +171,7 @@ class RNNLanguageModel(object):
             tf.add_to_collection(self._final_state_name, state_tuple.h)
 
 
-    def _import_state_tuples(state_tuples, name, num_replicas):
+    def _import_state_tuples(self, state_tuples, name, num_replicas):
         restored = []
         for i in range(len(state_tuples) * num_replicas):
             c = tf.get_collection_ref(name)[2 * i + 0]
@@ -192,9 +192,9 @@ class RNNLanguageModel(object):
 
         # RNNの初期状態、最終状態を復元
         num_replicas = num_gpus if self._name == "Train" else 1
-        self._initial_state = _import_state_tuples(
+        self._initial_state = self._import_state_tuples(
             self._initial_state, self._initial_state_name, num_replicas)
-        self._final_state = _import_state_tuples(
+        self._final_state = self._import_state_tuples(
             self._final_state, self._final_state_name, num_replicas)
 
 

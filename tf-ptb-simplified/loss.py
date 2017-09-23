@@ -8,6 +8,8 @@ rnn_language_modelに必要な形に単純化して再実装したもの。
 See https://www.tensorflow.org/api_docs/python/tf/contrib/seq2seq/sequence_loss
 """
 
+import tensorflow as tf
+
 from tensorflow.python.framework import ops
 from tensorflow.python.ops import array_ops
 from tensorflow.python.ops import math_ops
@@ -46,6 +48,6 @@ def rnn_loss(logits, y):
         crossent = math_ops.reduce_sum(crossent, axis=[0])
 
         # 正規化
-        crossent /= batch_size
+        crossent /= tf.cast(batch_size, tf.float32)
 
         return crossent

@@ -23,8 +23,7 @@ SAVE_PATH = './model/'
 def run_epoch(session, model, eval_op=None, verbose=False):
     """Runs the model on the given data."""
     start_time = time.time()
-    costs = 0.0
-    iters = 0
+    costs, iters = 0.0, 0
     state = session.run(model.initial_state)
 
     fetches = {"cost": model.cost, "final_state": model.final_state}
@@ -45,9 +44,9 @@ def run_epoch(session, model, eval_op=None, verbose=False):
         iters += model.input.num_steps
 
         if verbose and step % (model.input.epoch_size // 10) == 10:
-            print("%.3f perplexity: %.3f speed: %.0f wps" %
-                  (step * 1.0 / model.input.epoch_size, np.exp(costs / iters),
-                   iters * model.input.batch_size / (time.time() - start_time)))
+            print('{:.3f} perplexity: {:.3f} speed: {:.0f} wps'
+                  .format(step * 1.0 / model.input.epoch_size, np.exp(costs / iters),
+                          iters * model.input.batch_size / (time.time() - start_time)))
 
     return np.exp(costs / iters)
 
@@ -97,17 +96,18 @@ def main(_):
                 lr_decay = config.lr_decay \
                            ** max(i + 1 - config.decreasing_learning_rate_after, 0.0)
                 m.assign_lr(session, config.learning_rate * lr_decay)
+                print('Epoch: {} Learning rate: {:.3f}'.format(i + 1, session.run(m.lr)))
 
-                print("Epoch: %d Learning rate: %.3f" % (i + 1, session.run(m.lr)))
                 train_perplexity = run_epoch(session, m, eval_op=m.train_op, verbose=True)
-                print("Epoch: %d Train Perplexity: %.3f" % (i + 1, train_perplexity))
+                print('Epoch: {} Train Perplexity: {:.3f}'.format(i + 1, train_perplexity))
+
                 valid_perplexity = run_epoch(session, mvalid)
-                print("Epoch: %d Valid Perplexity: %.3f" % (i + 1, valid_perplexity))
+                print('Epoch: {} Valid Perplexity: {:.3f}'.format(i + 1, valid_perplexity))
 
             test_perplexity = run_epoch(session, mtest)
-            print("Test Perplexity: %.3f" % test_perplexity)
+            print('Test Perplexity: {:.3f}'.format(test_perplexity))
 
-            print("Saving model to %s." % SAVE_PATH)
+            print("Saving model to {}.".format(SAVE_PATH))
             sv.saver.save(session, SAVE_PATH + 'tf-ptb', global_step=sv.global_step)
 
 

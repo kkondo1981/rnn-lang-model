@@ -74,15 +74,21 @@ def create_model(mode_name, config, data, initializer):
         return m
 
 
-def set_embedding_visualization():
-    print('Saving vocab file to {}.'.format(raw_data.VOCAB_PATH))
-    raw_data.save_vocab()
-    summary_writer = tf.summary.FileWriter(LOGDIR_PATH)
-    config = projector.ProjectorConfig()
-    embedding = config.embeddings.add()
-    embedding.tensor_name = 'embedding'
-    embedding.metadata_path = raw_data.VOCAB_PATH
-    projector.visualize_embeddings(summary_writer, config)
+def set_embedding_visualization(name):
+    """Enables visualization of the embedding matrix and metadata"""
+    vocab_path = LOGDIR_PATH + 'vocab.tsv'
+
+    print('Saving vocab file to {}.'.format(vocab_path))
+    raw_data.save_vocab(vocab_path)
+
+    with tf.variable_scope("Model", reuse=True):
+        embedding_var = tf.get_variable(name)
+        summary_writer = tf.summary.FileWriter(LOGDIR_PATH)
+        config = projector.ProjectorConfig()
+        embedding = config.embeddings.add()
+        embedding.tensor_name = embedding_var.name
+        embedding.metadata_path = vocab_path
+        projector.visualize_embeddings(summary_writer, config)
 
 
 def main(_):
@@ -92,9 +98,6 @@ def main(_):
     # 各種設定（config: Train&Valid用, eval_config: Test用）
     config, eval_config = conf.get_config()
 
-    # 埋め込み行列の可視化設定
-    set_embedding_visualization()
-
     # 計算グラフの構築
     with tf.Graph().as_default():
         initializer = tf.random_uniform_initializer(-config.init_scale, config.init_scale)
@@ -103,6 +106,9 @@ def main(_):
         m = create_model('Train', config, train_data, initializer)
         mvalid = create_model('Valid', config, valid_data, initializer)
         mtest = create_model('Test', eval_config, test_data, initializer)
+
+        # 埋め込み行列の可視化用設定
+        set_embedding_visualization('embedding')
 
         # 学習実行
         sv = tf.train.Supervisor(logdir=LOGDIR_PATH)

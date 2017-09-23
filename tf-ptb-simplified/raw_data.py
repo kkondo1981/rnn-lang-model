@@ -18,7 +18,6 @@ import tensorflow as tf
 TRAIN_PATH = './data/ptb/simple-examples/data/ptb.train.txt'
 VALID_PATH = './data/ptb/simple-examples/data/ptb.valid.txt'
 TEST_PATH = './data/ptb/simple-examples/data/ptb.test.txt'
-VOCAB_PATH = './data/ptb/vocab.tsv'
 
 
 def _read_words(filename):
@@ -75,12 +74,12 @@ def get_raw_data():
     return train_data, valid_data, test_data, vocabulary
 
 
-def save_vocab():
+def save_vocab(path):
     """
     辞書を1行1語形式で保存
     """
     word_to_id = _build_vocab(TRAIN_PATH)
     sorted_w2id = sorted(word_to_id.items(), key=lambda x:x[1])
     words = ['{}\n'.format(x[0]) for x in sorted_w2id]
-    with open(VOCAB_PATH, 'w', encoding='utf-8') as f:
+    with open(path, 'w', encoding='utf-8') as f:
         f.writelines(words)

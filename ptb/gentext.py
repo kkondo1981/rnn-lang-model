@@ -15,23 +15,26 @@ RNN言語モデルによる文章生成
 └── model              : model dir
 ```
 
-上記以外の構成で実行する場合には、適宜LOGDIR_PATH, SAVE_PATHの値を
-修正して実行すること。
+上記以外の構成で実行する場合には、適宜PATHの値を修正して実行すること。
 
 """
+
+
+import re
 
 import numpy as np
 import tensorflow as tf
 
 import config as conf
 import raw_data
-import learn
+from rnn_language_model import RNNLanguageModel as Model
+from rnn_language_model_input import RNNLanguageModelInput as Input
 
 
 # PATHs
 SEED_WORDS_PATH = './ptb/seed_words.txt'
-LOGDIR_PATH = './log/tf-ptb/'
-SAVE_PATH = './model/'
+LOGDIR_PATH = './log/ptb/'
+MODEL_PATH = './model/ptb-51753'
 
 
 word_to_id = raw_data.get_word_to_id()
@@ -39,15 +42,30 @@ id_to_word = {v: k for k, v in word_to_id.items()}
 seed_words = raw_data._file_to_word_ids(SEED_WORDS_PATH, word_to_id)
 
 
+def create_model(mode_name, config, data, initializer):
+    """Creates the tensorflow model"""
+    with tf.name_scope(mode_name):
+        reuse = None
+        is_training = False
+
+        input_ = Input(config=config, data=data, name=mode_name+'Input')
+
+        with tf.variable_scope("Model", reuse=reuse, initializer=initializer):
+            m = Model(is_training=is_training, config=config, input_=input_)
+
+        return m
+
+
 def sample(a, temperature=1.0):
     # helper function to sample an index from a probability array
     a = np.log(a) / temperature
     a = np.exp(a) / np.sum(np.exp(a))
+    a = a / (1.0 + 1e-6)  # to avoid error when sum(a[:-1]) > 1.0
     return np.argmax(np.random.multinomial(1, a, 1))
 
 
 def generate_text(session, model, add_words_len, temperature=1.0):
-    x = np.zeros((1, 1), dtype=tf.int32)
+    x = np.zeros((1, 1), dtype=np.int32)
     state = session.run(model.initial_state)
     probs = None
 
@@ -56,19 +74,21 @@ def generate_text(session, model, add_words_len, temperature=1.0):
     for word_id in seed_words:
         output.append(word_id)
         x[0, 0] = word_id
-        feed_dict = {model.input_data.x: x, model.initial_state: state}
+        feed_dict = {model.input.x: x, model.initial_state: state}
         state, probs = session.run([model.final_state, model.probs], feed_dict)
+        probs = np.reshape(probs, (probs.shape[2]))
 
-    if not probs:
+    if probs is None:
         raise RuntimeError('Runtime Error: seed_words is empty or not in dict.')
 
     for _ in range(add_words_len):
-        word_id = sample(probs[0, :], temperature)
+        word_id = sample(probs, temperature)
         output.append(word_id)
 
         x[0, 0] = word_id
-        feed_dict = {model.input_data.x: x, model.initial_state: state}
+        feed_dict = {model.input.x: x, model.initial_state: state}
         state, probs = session.run([model.final_state, model.probs], feed_dict)
+        probs = np.reshape(probs, (probs.shape[2]))
 
     return output
 
@@ -84,18 +104,21 @@ def main(_):
 
         # 計算グラフの構築
         with tf.Graph().as_default(), tf.Session() as session:
-            initializer = tf.random_uniform_initializer(-config.init_scale, config.init_scale)
+            initializer = tf.random_uniform_initializer(-gen_config.init_scale, gen_config.init_scale)
 
             # 文章生成用モデル構築・学習済パラメータの復元
-            model = learn.create_model('TextGen', gen_config, [0], initializer)
+            model = create_model('TextGen', gen_config, [2], initializer)  # word_id=2 means '<eos>'
             saver = tf.train.Saver()
-            saver.restore(session, SAVE_PATH + 'tf-ptb')
+            saver.restore(session, MODEL_PATH)
 
             # 文章生成
-            output = generate_text(session, model, 100, 1.0)
-            s = ' '.join([id_to_word[word_id] for word_id in output])
-            s = s.replace('<eos>', '\n')
-            f.write(s)
+            for diversity in [1.0, 10.0, 100.0]:
+                f.write('\n\n============================================================\n')
+                f.write('** generated with diversity {:.2f} **\n'.format(diversity))
+                output = generate_text(session, model, 200, diversity)
+                s = ' '.join([id_to_word[word_id] for word_id in output])
+                s = re.sub(r'\s+<eos>\s+', '\n', s)
+                f.write(s)
 
 
 if __name__ == "__main__":

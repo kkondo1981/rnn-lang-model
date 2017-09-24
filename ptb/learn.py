@@ -45,7 +45,7 @@ from rnn_language_model_input import RNNLanguageModelInput as Input
 
 
 # PATHs
-LOGDIR_PATH = './log/tf-ptb/'
+LOGDIR_PATH = './log/ptb/'
 SAVE_PATH = './model/'
 
 
@@ -157,7 +157,7 @@ def main(_):
             print('Test Perplexity: {:.3f}'.format(test_perplexity))
 
             print('Saving model to {}.'.format(SAVE_PATH))
-            sv.saver.save(session, SAVE_PATH + 'tf-ptb', global_step=sv.global_step)
+            sv.saver.save(session, SAVE_PATH + 'ptb', global_step=sv.global_step)
 
 
 if __name__ == "__main__":

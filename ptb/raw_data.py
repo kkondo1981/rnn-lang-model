@@ -82,7 +82,7 @@ def get_word_to_id():
     Returns:
     - word_to_id: 単語⇒IDのリスト
     """
-    word_to_id = _builc_vocab(TRAIN_PATH)
+    word_to_id = _build_vocab(TRAIN_PATH)
     return word_to_id
 
 

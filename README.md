@@ -15,14 +15,26 @@ PerplexityはTrain, Validともに80前後を達成可能。
 
 実行時間は、AWSのGPUインスタンス（p2.xlarge）で3時間程度(2017/9/23)。
 
+## dependencies
+以下のバージョンで検証済
+- python: 3.6
+- numpy: 1.13.1
+- Tensorflow: tensorflow-gpu=1.2.1
 
-## 学習
+## learning
 
 ```
+# データセット作成
 ./dl-ptb.sh
+
+# ディレクトリ作成（初回のみ）
 mkdir ./log
 mkdir ./log/ptb
 mkdir ./model
+
+# 学習スクリプト実行
 python ./ptb/learn.py &
-tensorboard --logdir=./log/ptb &  # visualizatin the training
+
+# 学習状況の可視化 (see http://localhost:6006/
+tensorboard --logdir=./log/ptb &
 ```

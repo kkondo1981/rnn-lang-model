@@ -203,6 +203,7 @@ class RNNLanguageModel(object):
         self._initial_state = initial_state
         self._final_state = final_state
         self._cost = cost
+        self._logits = logits
 
         # Train操作
         if is_training:
@@ -245,3 +246,8 @@ class RNNLanguageModel(object):
     @property
     def train_op(self):
         return self._train_op
+
+
+    @property
+    def probs(self):
+        return tf.nn.softmax(self._logits)

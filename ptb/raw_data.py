@@ -77,6 +77,15 @@ def get_raw_data():
     return train_data, valid_data, test_data, vocabulary
 
 
+def get_word_to_id():
+    """
+    Returns:
+    - word_to_id: 単語⇒IDのリスト
+    """
+    word_to_id = _builc_vocab(TRAIN_PATH)
+    return word_to_id
+
+
 def save_vocab(path):
     """
     辞書を1行1語形式でpathに保存

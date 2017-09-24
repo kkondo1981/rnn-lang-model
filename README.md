@@ -21,7 +21,8 @@ PerplexityはTrain, Validともに80前後を達成可能。
 
 Test, Train, Valid用データのサイズはそれぞれ以下の通り。
 
-|file name     |    行数  |    語数|
+|データ        |    行数  |    語数|
+|------------- |:--------:| ------ |
 |ptb.test.txt  |   3,761  |  78,669|
 |ptb.train.txt |  4,2068  | 887,521|
 |ptb.valid.txt |   3,370  |  70,390|

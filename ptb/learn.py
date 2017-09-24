@@ -13,11 +13,14 @@ PerplexityはTrain, Validともに80台程度を達成。
 ```
  current dir(*)
 ｜
-├── tf-ptb-simplified
+├── ptb
 ｜   └── learn.py      : this script
 ｜
+├── data
+｜   └── ptb           : data dir
+｜
 ├── log
-｜   └── tf-ptb        : log dir
+｜   └── ptb           : log dir
 ｜
 └── model              : model dir
 ```

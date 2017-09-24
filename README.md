@@ -48,7 +48,7 @@ mkdir ./model
 # 学習スクリプト実行
 python ./ptb/learn.py &
 
-# 学習状況の可視化 (see http://localhost:6006/
+# 学習状況の可視化 (see http://localhost:6006/ )
 tensorboard --logdir=./log/ptb &
 ```
 

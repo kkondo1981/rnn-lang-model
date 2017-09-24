@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-RNNで文章を生成する計算モデルを作成する機能を実装。
-
-連続するnum_steps個の単語列(w_t, ..., w_{t+num_steps-1})から、添字を
-1つシフトした(w_{t+1}, ..., w_{t+num_steps})を順番に出力させるRNNで
-文章生成をモデル化。
+RNN言語モデル
 """
 
 import tensorflow as tf
@@ -163,7 +159,18 @@ def _train_op(cost, lr, max_grad_norm):
 
 
 class RNNLanguageModel(object):
-    """The RNN Language model."""
+    """
+    RNN言語モデル
+
+    内部状態を有し、単語を入力すると次の単語を出力する。
+    単語入力の度に内部状態が更新され、長期記憶を保持する。
+    （本実装ではLSTMを使用）
+
+    モデルを学習させる上では、計算グラフを静的に展開する際に
+    再帰処理を展開する必要から、固定長（config.num_steps）の
+    単語列から次の単語列を出力する際の損失最小化を図る。
+    （Truncated Backpropagation）
+    """
 
     def __init__(self, is_training, config, input_):
         self._input = input_

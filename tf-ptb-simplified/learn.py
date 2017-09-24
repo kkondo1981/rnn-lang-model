@@ -1,6 +1,30 @@
 # -*- coding: utf-8 -*-
 """
-simplified version of 'ptb_word_lm.py' medium model
+RNN言語モデルの学習処理
+
+[Usage] python ./tf-ptb-simplified/learn.py
+
+右記URLのMediumモデルに相当: https://arxiv.org/pdf/1409.2329.pdf
+
+AWSのGPUインスタンス（p2.xlarge）で3時間程度で学習終了(2017/9/23)。
+PerplexityはTrain, Validともに80台程度を達成。
+
+実行時のディレクトリ構成は、下記想定:
+```
+ current dir(*)
+｜
+├── tf-ptb-simplified
+｜   └── learn.py      : this script
+｜
+├── log
+｜   └── tf-ptb        : log dir
+｜
+└── model              : model dir
+```
+
+上記以外の構成で実行する場合には、適宜LOGDIR_PATH, SAVE_PATHの値を
+修正して実行すること。
+
 """
 
 import os

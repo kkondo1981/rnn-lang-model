@@ -1,21 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-RNNの入力を生成する計算グラフを作成する機能を実装。
-
-raw_data全体をRNNに1度に学習させる単位（入力x, 出力y）ごとに分解し、順次出力させる。
-
-1エポックでraw_data全体を学習させるが、ここでは以下のようにミニバッチを作成。
-（raw_dataは長さdata_lenの単語列、batch_size=20, num_steps=35 *Mediumモデル）
-
-- raw_dataをbatch_size個のミニバッチに分割
-  （各バッチは長さbatch_len = data_len // batch_sizeの連続する単語列）
-- 各バッチをnum_stepsごとのブロックに分割（block_0, block_1, ...）
-- i（=0, 1, ...）番目の学習で、各バッチにつきi番目のブロックをサンプリング
-  入力：各バッチの第iブロックを行方向に連結した batch_size x num_steps 行列
-  出力：各バッチの第iブロックを1つ次の単語にシフトしたものを行方向に連結した
-        batch_size x num_steps 行列
-
-具体的な処理は_xy_producer()を参照
+RNN言語モデルの入力
 """
 
 import tensorflow as tf
@@ -65,7 +50,41 @@ def _xy_producer(raw_data, batch_size, num_steps, name):
 
 
 class RNNLanguageModelInput(object):
-    """The input data."""
+    """
+    RNN言語モデルの入力
+
+    raw_data全体を学習単位ごとに処理する操作
+    => 1学習単位（1 unit）は下記変数のペア
+    - self.x: サイズ batch_size x num_steps の入力行列
+    - self.y: self.xと同サイズの出力行列
+
+    データ全体を処理するには、(self.x, self.y)をepoch_size回evalする
+    - epoch_size = ((data_len // batch_size) - 1) // num_steps
+
+    raw_dataの学習単位への分解は、以下の通り。
+
+    - raw_dataは長さdata_lenの単語IDのベクトル
+        raw_data = [3, 4, 2, 10, 8, 20, 5, 5, 7, 8, 9, 1, 13, 6, 9]
+
+    - raw_dataをbatch_size個に分割して、data行列を作成:
+      ex.)
+        data = [[3, 4, 2, 10, 8, 20, 5],  # batch 1
+                [5, 7, 8, 9, 1, 13, 6]]   # batch 2
+
+    - 各バッチのnum_stepsごとのブロックから(x, y)を作成
+      ex.)
+       # learning unit 1
+         x, y = ([[3, 4, 2],   # batch 1 for unit 1 (Input)
+                  [5, 7, 8]],  # batch 2 for unit 1 (Input)
+                 [[4, 2, 10],  # batch 1 for unit 1 (Output)
+                  [7, 8, 9]])  # batch 2 for unit 1 (Output)
+
+       # learning unit 2
+         x, y = ([[10, 8, 20], # batch 1 for unit 2 (Input)
+                  [9, 1, 13]], # batch 2 for unit 2 (Input)
+                 [[8, 20, 5],  # batch 1 for unit 2 (Output)
+                  [1, 13, 6]]) # batch 2 for unit 2 (Output)
+    """
 
     def __init__(self, config, data, name=None):
         self.batch_size = batch_size = config.batch_size

@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 各種パスおよびRNNのハイパーパラメータを設定。
-ここではコードを簡単にするため、ptb_word_lm.pyのMediumモデルを決め打ちで使用。
+
+右記URLのMediumモデルに相当: https://arxiv.org/pdf/1409.2329.pdf
 
 The hyperparameters used in the model:
 - init_scale - the initial scale of the weights

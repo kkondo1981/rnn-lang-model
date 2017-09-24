@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """
-RNNの損失関数（クロスエントロピー）を実装。
+RNN言語モデルの損失関数
 
-tf.contrib.seq2seq.sequence_loss()は汎用的になっているために読みにくいので、
-rnn_language_modelに必要な形に単純化して再実装したもの。
+tf.contrib.seq2seq.sequence_loss()でクロスエントロピーを計算する処理を、
+汎用的に書かれている部分を削って単純化して書き直したもの。
 
-See https://www.tensorflow.org/api_docs/python/tf/contrib/seq2seq/sequence_loss
+tf.contribの実装は下記URLを参照:
+- https://www.tensorflow.org/api_docs/python/tf/contrib/seq2seq/sequence_loss
 """
 
 import tensorflow as tf
@@ -18,14 +19,16 @@ from tensorflow.python.ops import nn_ops
 
 def rnn_loss(logits, y):
     """
-    softmax用損失関数。
-    logitsは対数確率（正規化前）、yは正解ラベル行列。
+    クロスエントロピー計算
 
-    期待するサイズは以下の通り：
-      logits: batch_size x num_steps x vocab_size
-      y: batch_size x num_steps
+    Arguments:
+    - logits: 事後確率ベクトル（対数確率、正規化前）
+         batch_size x num_steps x vocab_size
+    - y: 正解ラベル行列
+         batch_size x num_steps
 
-    出力は 長さnum_stepsの1階テンソル（バッチ方向は平均化）
+    Return:
+    - crossent: バッチ方向を平均化した長さnum_stepsの損失ベクトル
     """
     with ops.name_scope("rnn_loss", values=[logits, y]):
         batch_size = array_ops.shape(logits)[0]

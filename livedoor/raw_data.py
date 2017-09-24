@@ -6,11 +6,12 @@ Livedoor News コーパス
 Source: https://www.rondhuit.com/download/ldcc-20140209.tar.gz
 
 Test, Train, Valid用データのサイズはそれぞれ以下の通り。
+（Mecabでtokenizeしているため、設定次第でこの通りにならない場合あり）
 
 |dataset     |    行数  |       語数 |
-|Test        |    4,597 |     89,261 |
-|Train       |   45,970 |  1,659,061 |
-|Valid       |    4,597 |     92,911 |
+|Test        |    4,597 |     98,097 |
+|Train       |   45,970 |  1,745,548 |
+|Valid       |    4,597 |    101,714 |
 """
 
 import re
@@ -39,7 +40,7 @@ _MECAB_TOKENIZER.parse('')
 
 
 def _concat_files(dirnames):
-    filenames = list(chain.from_iterable([glob.glob(dirname + '*.txt') for dirname in dirnames]))
+    filenames = list(chain.from_iterable([sorted(glob.glob(dirname + '*.txt')) for dirname in dirnames]))
     filenames = [filename for filename in filenames if filename.find('LICENSE.txt') == -1]
 
     texts = []
@@ -75,12 +76,15 @@ def _split_by_sentence(text, seps='。．！!？?　\n'):
     return sentences
 
 
-def _tokenize(text):
+def _tokenize(sentences):
     words = []
-    node = _MECAB_TOKENIZER.parseToNode(text)
-    while node:
-        words.append(node.surface)
-        node = node.next
+
+    for sentence in sentences:
+        node = _MECAB_TOKENIZER.parseToNode(sentence)
+        while node:
+            words.append(node.surface)
+            node = node.next
+
     return words
 
 
@@ -91,15 +95,15 @@ def _get_sentences():
     cnt = 0
 
     train_sentences = sentences[cnt:(cnt + unit * 10)]
-    train_words = _tokenize('\n'.join(train_sentences))
+    train_words = _tokenize(train_sentences)
     cnt += unit * 10
 
     test_sentences = sentences[cnt:(cnt + unit)]
-    test_words = _tokenize('\n'.join(test_sentences))
+    test_words = _tokenize(test_sentences)
     cnt += unit
 
     valid_sentences = sentences[cnt:(cnt + unit)]
-    valid_words = _tokenize('\n'.join(valid_sentences))
+    valid_words = _tokenize(valid_sentences)
 
     print('train: {} lines, {} words'.format(len(train_sentences), len(train_words)))
     print('test: {} lines, {} words'.format(len(test_sentences), len(test_words)))
@@ -127,7 +131,7 @@ def _build_vocab(words):
 
 def _words_to_ids(words, word_to_id):
     unk_id = word_to_id['unknown']
-    return [word_to_id[word] for word in words if word in word_to_id else unk_id]
+    return [word_to_id[word] if word in word_to_id else unk_id for word in words]
 
 
 def get_raw_data():

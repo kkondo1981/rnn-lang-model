@@ -13,7 +13,7 @@ PerplexityはTrain, Validともに80前後を達成可能。
 実行時間は、AWSのGPUインスタンス（p2.xlarge）で3時間程度(2017/9/23)。
 
 ## dataset
-- Pen Tree Bank (PTB) dataaset
+- Pen Tree Bank (PTB) dataset
 - Source: http://www.fit.vutbr.cz/~imikolov/rnnlm/simple-examples.tgz
 
 Test, Train, Valid用データのサイズはそれぞれ以下の通り。

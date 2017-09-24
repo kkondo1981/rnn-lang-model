@@ -112,10 +112,10 @@ def main(_):
             saver.restore(session, MODEL_PATH)
 
             # 文章生成
-            for diversity in [1.0, 10.0, 100.0]:
+            for diversity in [1.0, 0.8, 0.6]:
                 f.write('\n\n============================================================\n')
                 f.write('** generated with diversity {:.2f} **\n'.format(diversity))
-                output = generate_text(session, model, 200, diversity)
+                output = generate_text(session, model, 100, diversity)
                 s = ' '.join([id_to_word[word_id] for word_id in output])
                 s = re.sub(r'\s+<eos>\s+', '\n', s)
                 f.write(s)

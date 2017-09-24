@@ -2,7 +2,7 @@
 """
 RNN言語モデルの学習処理
 
-[Usage] python ./tf-ptb-simplified/learn.py
+[Usage] python ./ptb/learn.py
 
 右記URLのMediumモデルに相当: https://arxiv.org/pdf/1409.2329.pdf
 

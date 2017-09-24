@@ -82,7 +82,8 @@ def _tokenize(sentences):
     for sentence in sentences:
         node = _MECAB_TOKENIZER.parseToNode(sentence)
         while node:
-            words.append(node.surface)
+            if node.surface != '':
+                words.append(node.surface)
             node = node.next
 
     return words

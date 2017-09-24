@@ -15,6 +15,18 @@ PerplexityはTrain, Validともに80前後を達成可能。
 
 実行時間は、AWSのGPUインスタンス（p2.xlarge）で3時間程度(2017/9/23)。
 
+## dataset
+- Pen Tree Bank (PTB) dataaset
+- Source: http://www.fit.vutbr.cz/~imikolov/rnnlm/simple-examples.tgz
+
+Test, Train, Valid用データのサイズはそれぞれ以下の通り。
+
+|file name     |    行数  |    語数|
+|ptb.test.txt  |   3,761  |  78,669|
+|ptb.train.txt |  4,2068  | 887,521|
+|ptb.valid.txt |   3,370  |  70,390|
+
+
 ## dependencies
 以下のバージョンで検証済
 - python: 3.6

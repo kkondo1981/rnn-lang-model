@@ -2,7 +2,7 @@
 """
 RNN言語モデルの学習処理
 
-[Usage] python ./ptb/learn.py
+[Usage] python ./livedoor/learn.py
 
 右記URLのMediumモデルに相当: https://arxiv.org/pdf/1409.2329.pdf
 
@@ -13,14 +13,14 @@ PerplexityはTrain, Validともに80台程度を達成。
 ```
  current dir(*)
 ｜
-├── ptb
+├── livedoor
 ｜   └── learn.py      : this script
 ｜
 ├── data
-｜   └── ptb           : data dir
+｜   └── livedoor      : data dir
 ｜
 ├── log
-｜   └── ptb           : log dir
+｜   └── livedoor      : log dir
 ｜
 └── model              : model dir
 ```
@@ -45,7 +45,7 @@ from rnn_language_model_input import RNNLanguageModelInput as Input
 
 
 # PATHs
-LOGDIR_PATH = './log/ptb/'
+LOGDIR_PATH = './log/livedoor/'
 SAVE_PATH = './model/'
 
 
@@ -157,7 +157,7 @@ def main(_):
             print('Test Perplexity: {:.3f}'.format(test_perplexity))
 
             print('Saving model to {}.'.format(SAVE_PATH))
-            sv.saver.save(session, SAVE_PATH + 'ptb', global_step=sv.global_step)
+            sv.saver.save(session, SAVE_PATH + 'livedoor', global_step=sv.global_step)
 
 
 if __name__ == "__main__":

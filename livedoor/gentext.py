@@ -2,14 +2,14 @@
 """
 RNN言語モデルによる文章生成
 
-[Usage] python ./ptb/gentext.py
+[Usage] python ./livedoor/gentext.py
 - 実行前にlearn.pyでモデルを学習・保存しておくこと。
 
 実行時のディレクトリ構成は、下記想定:
 ```
  current dir(*)
 ｜
-├── ptb
+├── livedoor
 ｜   └── gentext.py    : this script
 ｜
 └── model              : model dir
@@ -32,9 +32,9 @@ from rnn_language_model_input import RNNLanguageModelInput as Input
 
 
 # PATHs
-SEED_WORDS_PATH = './ptb/seed_words.txt'
-LOGDIR_PATH = './log/ptb/'
-MODEL_PATH = './model/ptb-51753'
+SEED_WORDS_PATH = './livedoor/seed_words.txt'
+LOGDIR_PATH = './log/livedoor/'
+MODEL_PATH = './model/livedoor-51753'
 
 
 word_to_id = raw_data.get_word_to_id()

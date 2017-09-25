@@ -18,6 +18,7 @@ livedoorニュースコーパスから日本語言語モデルを学習。
 ```
 # データセット作成
 ./dl-livedoor.sh
+python ./make_livedoor_data.py > ./data/livedoor/make_livedoor_data.out
 
 # ディレクトリ作成（初回のみ）
 mkdir ./log

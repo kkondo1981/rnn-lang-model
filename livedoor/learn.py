@@ -32,6 +32,7 @@ PerplexityはTrain, Validともに80台程度を達成。
 
 import os
 import time
+import shutil
 
 import numpy as np
 import tensorflow as tf
@@ -105,10 +106,7 @@ def create_model(mode_name, config, data, initializer):
 def set_embedding_visualization(name):
     """Enables visualization of the embedding matrix and metadata"""
     vocab_path = LOGDIR_PATH + 'vocab.tsv'
-
-    print('Saving vocab file to {}.'.format(vocab_path))
-    raw_data.save_vocab(vocab_path)
-
+    shutil.copy(raw_data.VOCAB_FILE_PATH, vocab_path)
     with tf.variable_scope("Model", reuse=True):
         embedding_var = tf.get_variable(name)
         summary_writer = tf.summary.FileWriter(LOGDIR_PATH)

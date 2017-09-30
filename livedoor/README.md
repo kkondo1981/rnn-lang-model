@@ -38,3 +38,10 @@ tensorboard --logdir=./log/livedoor &
 python ./livedoor/gentext.py
 cat ./log/livedoor/gentext.txt
 ```
+
+## likelihood test
+
+```
+python ./livedoor/likelihood.py
+cat ./log/livedoor/likelihood.txt
+```

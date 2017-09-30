@@ -10,7 +10,7 @@ RNN言語モデルによる尤度比較
  current dir(*)
 ｜
 ├── livedoor
-｜   └── gentext.py    : this script
+｜   └── likelihood.py    : this script
 ｜
 └── model              : model dir
 ```
@@ -126,7 +126,7 @@ def search_patterns(session, model, words):
                         news_state, new_probs = one_step(session, model, new_state, eos_id)
                     new_cands.append((new_cand, new_loglik, new_state, new_probs))
         new_cands = sorted(new_cands, key=lambda x: -x[1])
-        cands = new_cands[:5]
+        cands = new_cands[:10]
 
         print('============================================================\n', flush=True)
         for cand, loglik, _, _ in cands:

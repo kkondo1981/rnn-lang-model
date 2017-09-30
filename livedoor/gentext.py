@@ -32,14 +32,13 @@ from rnn_language_model_input import RNNLanguageModelInput as Input
 
 
 # PATHs
-SEED_WORDS_PATH = './livedoor/seed_words.txt'
 LOGDIR_PATH = './log/livedoor/'
-MODEL_PATH = './model/livedoor-51753'
+MODEL_PATH = './model/livedoor-78273'
 
 
 word_to_id = raw_data.get_word_to_id()
 id_to_word = {v: k for k, v in word_to_id.items()}
-seed_words = raw_data._file_to_word_ids(SEED_WORDS_PATH, word_to_id)
+eos_id = word_to_id['eos']
 
 
 def create_model(mode_name, config, data, initializer):
@@ -64,61 +63,56 @@ def sample(a, temperature=1.0):
     return np.argmax(np.random.multinomial(1, a, 1))
 
 
-def generate_text(session, model, add_words_len, temperature=1.0):
+def generate_sentence(session, model, temperature=1.0, end='。'):
     x = np.zeros((1, 1), dtype=np.int32)
     state = session.run(model.initial_state)
-    probs = None
 
     output = []
 
-    for word_id in seed_words:
-        output.append(word_id)
-        x[0, 0] = word_id
+    x[0, 0] = eos_id
+    while True:
         feed_dict = {model.input.x: x, model.initial_state: state}
         state, probs = session.run([model.final_state, model.probs], feed_dict)
         probs = np.reshape(probs, (probs.shape[2]))
 
-    if probs is None:
-        raise RuntimeError('Runtime Error: seed_words is empty or not in dict.')
-
-    for _ in range(add_words_len):
         word_id = sample(probs, temperature)
-        output.append(word_id)
+        word = id_to_word[word_id]
+        if word == 'eos':
+            print('。', flush=True)
+            break
+
+        output.append(word)
+        print(word, end='', flush=True)
 
         x[0, 0] = word_id
-        feed_dict = {model.input.x: x, model.initial_state: state}
-        state, probs = session.run([model.final_state, model.probs], feed_dict)
-        probs = np.reshape(probs, (probs.shape[2]))
 
-    return output
+    return ''.join(output) + end
 
 
 def main(_):
-    if len(seed_words) == 0:
-        raise RuntimeError('RuntimeError: No seed words or all seed words are not in dict.')
-
     # 各種設定（1語ずつ処理するのでeval_configを使用）
     _, gen_config = conf.get_config()
 
     with open(LOGDIR_PATH + 'gentext.txt', 'w') as f:
 
-        # 計算グラフの構築
-        with tf.Graph().as_default(), tf.Session() as session:
-            initializer = tf.random_uniform_initializer(-gen_config.init_scale, gen_config.init_scale)
+        # 文章生成
+        for temperature in [1.4, 1.2, 1.0, 0.8, 0.6]:
+            print('\n\nGenerating the text with temperature {}'.format(temperature), flush=True)
+            f.write('\n\n============================================================\n')
+            f.write('** generated with temperature {:.2f} **\n'.format(temperature))
+            for _ in range(10):
 
-            # 文章生成用モデル構築・学習済パラメータの復元
-            model = create_model('TextGen', gen_config, [2], initializer)  # word_id=2 means '<eos>'
-            saver = tf.train.Saver()
-            saver.restore(session, MODEL_PATH)
+                # 計算グラフの構築
+                with tf.Graph().as_default(), tf.Session() as session:
+                    initializer = tf.random_uniform_initializer(-gen_config.init_scale, gen_config.init_scale)
 
-            # 文章生成
-            for diversity in [1.0, 0.8, 0.6]:
-                f.write('\n\n============================================================\n')
-                f.write('** generated with diversity {:.2f} **\n'.format(diversity))
-                output = generate_text(session, model, 100, diversity)
-                s = ' '.join([id_to_word[word_id] for word_id in output])
-                s = re.sub(r'\s+<eos>\s+', '\n', s)
-                f.write(s)
+                    # 文章生成用モデル構築・学習済パラメータの復元
+                    model = create_model('TextGen', gen_config, [eos_id], initializer)  # start with 'eos'
+                    saver = tf.train.Saver()
+                    saver.restore(session, MODEL_PATH)
+
+                    output = generate_sentence(session, model, temperature)
+                    f.write(output + '\n')
 
 
 if __name__ == "__main__":

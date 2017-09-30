@@ -6,12 +6,13 @@ Livedoor News コーパス
 Source: https://www.rondhuit.com/download/ldcc-20140209.tar.gz
 
 Test, Train, Valid用データのサイズはそれぞれ以下の通り。
-（Mecabでtokenizeしているため、設定次第でこの通りにならない場合あり）
+（Test, Train, Validの各データ用にセンテンスをランダムに選定した上で
+  Mecabでtokenizeしているため、再現性がない点に注意）
 
 |dataset     |    行数  |       語数 |
-|Test        |    4,597 |     98,097 |
-|Train       |   45,970 |  1,745,548 |
-|Valid       |    4,597 |    101,714 |
+|Test        |    4,597 |    332,107 |
+|Train       |   45,970 |  1,400,994 |
+|Valid       |    4,597 |    102,923 |
 """
 
 
@@ -21,7 +22,7 @@ TEST_WORDS_PATH = './data/livedoor/test_words.txt'
 VALID_WORDS_PATH = './data/livedoor/valid_words.txt'
 
 
-def _buid_vocab(path):
+def _build_vocab(path):
     with open(path, 'r', encoding='utf-8') as f:
         words = [line.strip().split('\t')[0] for line in f.readlines()]
     words = words[1:]
@@ -61,4 +62,4 @@ def get_word_to_id():
     Returns:
     - word_to_id: 単語⇒IDのリスト
     """
-    return = _build_vocab(VOCAB_FILE_PATH)
+    return _build_vocab(VOCAB_FILE_PATH)

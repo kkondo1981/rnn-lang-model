@@ -63,6 +63,10 @@ def sample(a, temperature=1.0):
     return np.argmax(np.random.multinomial(1, a, 1))
 
 
+def is_ascii(char):
+    return ord(char) < 128
+
+
 def generate_sentence(session, model, temperature=1.0, end='。'):
     x = np.zeros((1, 1), dtype=np.int32)
     state = session.run(model.initial_state)
@@ -81,6 +85,10 @@ def generate_sentence(session, model, temperature=1.0, end='。'):
             print('。', flush=True)
             break
 
+        if len(output) > 0 and is_ascii(output[-1][-1]) and is_ascii(word[0]):
+            output.append(' ')
+            print(' ', end='', flush=True)
+
         output.append(word)
         print(word, end='', flush=True)
 
@@ -93,24 +101,23 @@ def main(_):
     # 各種設定（1語ずつ処理するのでeval_configを使用）
     _, gen_config = conf.get_config()
 
-    with open(LOGDIR_PATH + 'gentext.txt', 'w') as f:
+    # 計算グラフの構築
+    with tf.Graph().as_default(), tf.Session() as session:
+        initializer = tf.random_uniform_initializer(-gen_config.init_scale, gen_config.init_scale)
 
-        # 文章生成
-        for temperature in [1.4, 1.2, 1.0, 0.8, 0.6]:
-            print('\n\nGenerating the text with temperature {}'.format(temperature), flush=True)
-            f.write('\n\n============================================================\n')
-            f.write('** generated with temperature {:.2f} **\n'.format(temperature))
-            for _ in range(10):
+        # 文章生成用モデル構築・学習済パラメータの復元
+        model = create_model('TextGen', gen_config, [eos_id], initializer)  # start with 'eos'
+        saver = tf.train.Saver()
+        saver.restore(session, MODEL_PATH)
 
-                # 計算グラフの構築
-                with tf.Graph().as_default(), tf.Session() as session:
-                    initializer = tf.random_uniform_initializer(-gen_config.init_scale, gen_config.init_scale)
+        with open(LOGDIR_PATH + 'gentext.txt', 'w') as f:
 
-                    # 文章生成用モデル構築・学習済パラメータの復元
-                    model = create_model('TextGen', gen_config, [eos_id], initializer)  # start with 'eos'
-                    saver = tf.train.Saver()
-                    saver.restore(session, MODEL_PATH)
-
+            # 文章生成
+            for temperature in [1.4, 1.2, 1.0, 0.8, 0.6]:
+                print('\n\nGenerating the text with temperature {}'.format(temperature), flush=True)
+                f.write('\n\n============================================================\n')
+                f.write('** generated with temperature {:.2f} **\n'.format(temperature))
+                for _ in range(10):
                     output = generate_sentence(session, model, temperature)
                     f.write(output + '\n')
 

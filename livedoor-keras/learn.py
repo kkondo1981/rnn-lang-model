@@ -23,6 +23,8 @@ RNN言語モデルの学習処理
 
 """
 
+import time
+
 import numpy as np
 
 from keras import backend as K
@@ -56,25 +58,34 @@ if __name__ == "__main__":
     valid_input = Input(config, valid_data)
     test_input = Input(config, test_data)
 
+    start_time = time.time()
+    total_words = train_input.x.shape[0] * config.num_steps
+
     # 学習実行
     for i in range(config.max_epoch):
         lr_decay = config.lr_decay \
                    ** max(i + 1 - config.decreasing_learning_rate_after, 0.0)
         lr = config.learning_rate * lr_decay
         K.update(m.optimizer.lr, lr)
-        print('Epoch: {} Learning rate: {:.3f}'.format(i + 1, lr))
+        print('Epoch: {} Learning rate: {:.3f}'.format(i + 1, lr), flush=True)
 
+        start_time_one_epoch = time.time()
         m.model.fit(x=train_input.x, y=train_input.y, batch_size=config.batch_size,
                     epochs=1, verbose=0)
 
+        wps = total_words / (time.time() - start_time_one_epoch)
+        print('speed: {:.0f} wps'.format(wps), flush=True)
+
         perp = calc_perplexity(m.model, train_input, config.batch_size)
-        print('Epoch: {} Train Perplexity: {:.3f}'.format(i + 1, perp))
+        print('Epoch: {} Train Perplexity: {:.3f}'.format(i + 1, perp), flush=True)
 
         perp = calc_perplexity(m.model, valid_input, config.batch_size)
-        print('Epoch: {} Valid Perplexity: {:.3f}'.format(i + 1, perp))
+        print('Epoch: {} Valid Perplexity: {:.3f}'.format(i + 1, perp), flush=True)
 
     perp = calc_perplexity(m.model, test_input, config.batch_size)
-    print('Test Perplexity: {:.3f}'.format(perp))
+    print('Test Perplexity: {:.3f}'.format(perp), flush=True)
+    wps = total_words * config.max_epoch / (time.time() - start_time)
+    print('speed: {:.0f} wps'.format(wps), flush=True)
 
     print('Saving model to {}.'.format(SAVE_PATH))
     m.save(SAVE_PATH + 'livedoor-keras')

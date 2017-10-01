@@ -26,10 +26,10 @@ mkdir ./log/livedoor
 # mkdir ./model  # make model dir if it does not exists
 
 # 学習スクリプト実行
-python ./livedoor/learn.py &
+python ./livedoor-keras/learn.py > ./log/livedoor-keras.out &
 
 # 学習状況の可視化 (see http://localhost:6006/ )
-tensorboard --logdir=./log/livedoor &
+# tensorboard --logdir=./log/livedoor &
 ```
 
 ## text generation

@@ -16,7 +16,6 @@ RNN言語モデルの学習処理
 ├── data
 ｜   └── livedoor      : data dir
 ｜
-｜
 └── model              : model dir
 ```
 
@@ -25,6 +24,8 @@ RNN言語モデルの学習処理
 """
 
 import numpy as np
+
+from keras import backend as K
 
 import config as conf
 import raw_data
@@ -60,6 +61,7 @@ if __name__ == "__main__":
         lr_decay = config.lr_decay \
                    ** max(i + 1 - config.decreasing_learning_rate_after, 0.0)
         lr = config.learning_rate * lr_decay
+        K.update(m.optimizer.lr, lr)
         print('Epoch: {} Learning rate: {:.3f}'.format(i + 1, lr))
 
         m.model.fit(x=train_input.x, y=train_input.y, batch_size=config.batch_size, epochs=1)

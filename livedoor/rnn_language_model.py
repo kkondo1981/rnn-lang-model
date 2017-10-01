@@ -36,11 +36,11 @@ def _x_distributed(x_local, vocab_size, hidden_size, use_dropout=False, keep_pro
     return x_distributed
 
 
-def _rnn_cell(hidden_size, num_layers, batch_size, 
-              forget_bias=0.0, use_dropout=False, keep_prob=0.5):
+def _lstm_cell(hidden_size, num_layers, batch_size, 
+               forget_bias=0.0, use_dropout=False, keep_prob=0.5):
     """
-    RNNセルを作成(LSTMを使用)。
-    LSTMセルの実装は右記論文依拠: https://arxiv.org/abs/1409.2329
+    LSTMセルを作成。
+    実装は右記論文依拠: https://arxiv.org/abs/1409.2329
 
     Arguments:
     - hidden_size: 隠れ層の次元
@@ -62,6 +62,49 @@ def _rnn_cell(hidden_size, num_layers, batch_size,
         [cell for _ in range(num_layers)], state_is_tuple=True)
 
     return cell, cell.zero_state(batch_size, tf.float32)
+
+
+def _gru_cell(hidden_size, num_layers, batch_size, 
+              use_dropout=False, keep_prob=0.5):
+    """
+    GRUセルを作成。
+    実装は右記論文依拠: https://arxiv.org/abs/1406.1078
+
+    Arguments:
+    - hidden_size: 隠れ層の次元
+    - num_layers: 隠れ層の数
+    - batch_size: バッチ数
+    ...
+
+    Returns:
+    - cell: the created RNN cell
+    - initial_state: the initial state of the cell
+    """
+    cell = tf.contrib.rnn.GRUCell(hidden_size)
+    if use_dropout:
+        cell = tf.contrib.rnn.DropoutWrapper(cell, output_keep_prob=keep_prob)
+
+    # RNNの各層を同じcellオブジェクトで初期化するコードだが、これでOK
+    # 右記URL参照: https://github.com/tensorflow/tensorflow/issues/7604
+    cell = tf.contrib.rnn.MultiRNNCell(
+        [cell for _ in range(num_layers)], state_is_tuple=True)
+
+    return cell, cell.zero_state(batch_size, tf.float32)
+
+
+def _rnn_cell(hidden_size, num_layers, batch_size, 
+              use_dropout=False, keep_prob=0.5, cell_type='LSTM'):
+    """
+    RNNセルを作成。cell_typeでLSTMとGRUを選択可能。
+    """
+    if cell_type == 'LSTM':
+        return _lstm_cell(hidden_size, num_layers, batch_size, forget_bias=0.0,
+                          use_dropout=use_dropout, keep_prob=keep_prob)
+    elif cell_type == 'GRU':
+        return _gru_cell(hidden_size, num_layers, batch_size,
+                         use_dropout=use_dropout, keep_prob=keep_prob)
+    else:
+        raise ValueError("'cell_type' other than 'LSTM' or 'GRU' is not allowed.")
 
 
 def _unroll_rnn(cell, initial_state, x, num_steps):
@@ -186,15 +229,15 @@ class RNNLanguageModel(object):
         vocab_size = config.vocab_size
 
         # 学習時はDropout処理を使用
-        use_dropout = is_training and config.keep_prob < 1
+        use_dropout =  is_training and config.keep_prob < 1
         keep_prob = config.keep_prob
 
         # 計算グラフを構築
         x_distributed = _x_distributed(x, vocab_size, hidden_size,
                                        use_dropout, keep_prob)
-        cell, initial_state = _rnn_cell(hidden_size, config.num_layers,
-                                        batch_size, forget_bias=0.0,
-                                        use_dropout=use_dropout, keep_prob=keep_prob)
+        cell, initial_state = _rnn_cell(hidden_size, config.num_layers, batch_size,
+                                        use_dropout=use_dropout, keep_prob=keep_prob,
+                                        cell_type=config.rnn_cell)
         outputs, final_state = _unroll_rnn(cell, initial_state, x_distributed, num_steps)
         logits = _logits(outputs, hidden_size, batch_size, num_steps, vocab_size)
         cost = tf.reduce_sum(loss.rnn_loss(logits, y))  # クロスエントロピー
@@ -204,6 +247,7 @@ class RNNLanguageModel(object):
         self._final_state = final_state
         self._cost = cost
         self._logits = logits
+        self._rnn_cell = config.rnn_cell
 
         # Train操作
         if is_training:
@@ -236,6 +280,11 @@ class RNNLanguageModel(object):
     @property
     def final_state(self):
         return self._final_state
+
+
+    @property
+    def rnn_cell(self):
+        return self._rnn_cell
 
 
     @property

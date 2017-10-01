@@ -62,9 +62,16 @@ def run_epoch(session, model, eval_op=None, verbose=False):
 
     for step in range(model.input.epoch_size):
         feed_dict = {}
-        for i, (c, h) in enumerate(model.initial_state):
-            feed_dict[c] = state[i].c
-            feed_dict[h] = state[i].h
+
+        if model.rnn_cell == 'LSTM':
+            for i, (c, h) in enumerate(model.initial_state):
+                feed_dict[c] = state[i].c
+                feed_dict[h] = state[i].h
+        elif model.rnn_cell == 'GRU':
+            for i, s in enumerate(model.initial_state):
+                feed_dict[s] = state[i]
+        else:
+            raise ValueError('')
 
         vals = session.run(fetches, feed_dict)
         cost = vals["cost"]

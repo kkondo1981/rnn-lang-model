@@ -38,13 +38,13 @@ SAVE_PATH = './model/'
 
 
 def calc_perplexity(model, input_, batch_size):
-    loss = model.evaluate(input_.x, input_.y, batch_size=batch_size)
+    loss = model.evaluate(input_.x, input_.y, batch_size=batch_size, verbose=0)
     return np.exp(loss)
 
 
 if __name__ == "__main__":
     # 各種設定
-    config, eval_config = conf.get_config()
+    config, _ = conf.get_config()
 
     # モデル構築
     m = Model(config)
@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # インプット作成
     train_data, valid_data, test_data, _ = raw_data.get_raw_data()
     train_input = Input(config, train_data)
-    valid_input = Input(eval_config, valid_data)
+    valid_input = Input(config, valid_data)
     test_input = Input(config, test_data)
 
     # 学習実行
@@ -64,12 +64,13 @@ if __name__ == "__main__":
         K.update(m.optimizer.lr, lr)
         print('Epoch: {} Learning rate: {:.3f}'.format(i + 1, lr))
 
-        m.model.fit(x=train_input.x, y=train_input.y, batch_size=config.batch_size, epochs=1)
+        m.model.fit(x=train_input.x, y=train_input.y, batch_size=config.batch_size,
+                    epochs=1, verbose=0)
 
         perp = calc_perplexity(m.model, train_input, config.batch_size)
         print('Epoch: {} Train Perplexity: {:.3f}'.format(i + 1, perp))
 
-        perp = calc_perplexity(m.model, valid_input, eval_config.batch_size)
+        perp = calc_perplexity(m.model, valid_input, config.batch_size)
         print('Epoch: {} Valid Perplexity: {:.3f}'.format(i + 1, perp))
 
     perp = calc_perplexity(m.model, test_input, config.batch_size)

@@ -90,14 +90,14 @@ class RNNLanguageModel(object):
         self._optimizer = optimizer
 
 
-    def save(prefix):
+    def save(self, prefix):
     # save model structure to YAML file
         f = open(prefix + '_nn_model.yaml', 'w')
-        f.write(model.to_yaml())
+        f.write(self._model.to_yaml())
         f.close()
 
         # save model weights to HDF5 file
-        model.save_weights(prefix + '_nn_weights.hdf5')
+        self._model.save_weights(prefix + '_nn_weights.hdf5')
 
 
     # accessors

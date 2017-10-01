@@ -36,7 +36,7 @@ class MediumConfig(object):
     lr_decay = 0.8
     batch_size = 20
     vocab_size = 10000
-    rnn_cell = 'GRU'
+    rnn_cell = 'LSTM'
     # rnn_mode = "block"
 
 

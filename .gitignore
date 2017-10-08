@@ -21,6 +21,7 @@
 *.log*
 *.res*
 *.out*
+*.err
 *.csv
 
 # to ignore local files

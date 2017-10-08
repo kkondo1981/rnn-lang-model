@@ -16,14 +16,14 @@ livedoorニュースコーパスから日本語言語モデルを学習。
 ## learning
 
 ```
-# データセット作成
+# データセット作成（初回のみ）
 ./dl-livedoor.sh
 python ./make_livedoor_data.py > ./data/livedoor/make_livedoor_data.out
 
-# ディレクトリ作成（初回のみ）
+# ディレクトリ作成（作成済みの場合は省略）
 mkdir ./log
 mkdir ./log/livedoor
-# mkdir ./model  # make model dir if it does not exists
+# mkdir ./model
 
 # 学習スクリプト実行
 python ./livedoor/learn.py &

@@ -41,19 +41,28 @@ id_to_word = {v: k for k, v in word_to_id.items()}
 eos_id = word_to_id['eos']
 
 
+def sample(a, temperature=1.0):
+    # helper function to sample an index from a probability array
+    a = np.log(a) / temperature
+    a = np.exp(a) / np.sum(np.exp(a))
+    a = a / (1.0 + 1e-6)  # to avoid error when sum(a[:-1]) > 1.0
+    return np.argmax(np.random.multinomial(1, a, 1))
+
+
 def is_ascii(char):
     return ord(char) < 128
 
 
-def generate_sentence(model, num_steps, end='。'):
+def generate_sentence(model, num_steps, temperature=1.0, end='。'):
     x = np.array([eos_id] * num_steps)
     x = np.reshape(x, (1, num_steps))
 
     output = []
 
     while True:
-        y = model.predict(x)
-        word_id = y[0, num_steps - 1, 0]
+        y = model.model.predict(x)
+        probs = np.reshape(y[0][num_steps - 1], y.shape[2])
+        word_id = sample(probs, temperature)
         word = id_to_word[word_id]
 
         if word == 'eos':
@@ -83,9 +92,10 @@ if __name__ == "__main__":
 
     with open(LOGDIR_PATH + 'gentext.txt', 'w') as f:
         # 文章生成
-        print('\n\nGenerating the text with temperature {}'.format(temperature), flush=True)
-        f.write('\n\n============================================================\n')
-        f.write('** generated with temperature {:.2f} **\n'.format(temperature))
-        for _ in range(10):
-            output = generate_sentence(m, config.num_steps)
-            f.write(output + '\n')
+        for temperature in [1.4, 1.2, 1.0, 0.8, 0.6]:
+            print('\n\nGenerating the text with temperature {}'.format(temperature), flush=True)
+            f.write('\n\n============================================================\n')
+            f.write('** generated with temperature {:.2f} **\n'.format(temperature))
+            for _ in range(10):
+                output = generate_sentence(m, config.num_steps, temperature)
+                f.write(output + '\n')

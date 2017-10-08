@@ -5,7 +5,7 @@ RNN言語モデル
 
 import tensorflow as tf
 
-from keras.models import Sequential
+from keras.models import Sequential, model_from_yaml
 from keras.layers.embeddings import Embedding
 from keras.layers.core import Dense, Dropout, Activation
 from keras.layers.recurrent import LSTM, GRU

@@ -3,6 +3,8 @@
 RNN言語モデル
 """
 
+import numpy as np
+
 import tensorflow as tf
 
 from keras.models import Sequential, model_from_yaml
@@ -112,7 +114,8 @@ class RNNLanguageModel(object):
     def calc_next_word_prob(self, x):
         # x should have the shape (1, num_steps)
         y = self._model.predict(x)
-        return np.reshape(y[0][num_steps - 1], y.shape[2])
+        num_steps = y.shape[1]
+        return np.reshape(y[0, num_steps - 1], y.shape[2])
 
 
     # accessors

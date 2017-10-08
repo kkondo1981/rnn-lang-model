@@ -66,8 +66,8 @@ class RNNLanguageModel(object):
     （Truncated Backpropagation）
     """
 
-    def __init__(self, config=None, model_path_prefix=None):
-        if config is not None:
+    def __init__(self, config, model_path_prefix=None):
+        if model_path_prefix is None:
             # 各種定数（隠れ層次元、語彙数）
             hidden_size = config.hidden_size
             vocab_size = config.vocab_size
@@ -83,8 +83,7 @@ class RNNLanguageModel(object):
             _add_rnn_layer(m, hidden_size, config.num_layers,
                            use_dropout, keep_prob, config.rnn_cell)
             _add_softmax(m, vocab_size)
-
-        elif model_path_prefix is not None:
+        else:
             # load model structure to YAML file
             f = open(model_path_prefix + '_nn_model.yaml', 'r')
             m = model_from_yaml(f.read())
@@ -92,8 +91,6 @@ class RNNLanguageModel(object):
 
             # load model weights to HDF5 file
             m.load_weights(model_path_prefix + '_nn_weights.hdf5')
-        else:
-            raise ValueError('cannot create model')
 
         optimizer = SGD(lr=config.learning_rate, clipnorm=config.max_grad_norm)
         m.compile(loss='sparse_categorical_crossentropy', optimizer=optimizer)

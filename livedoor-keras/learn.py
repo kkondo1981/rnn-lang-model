@@ -49,7 +49,7 @@ if __name__ == "__main__":
     config, _ = conf.get_config()
 
     # モデル構築
-    m = Model(config)
+    m = Model(config=config)
     m.model.summary()
 
     # インプット作成

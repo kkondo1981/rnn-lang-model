@@ -66,22 +66,32 @@ class RNNLanguageModel(object):
     （Truncated Backpropagation）
     """
 
-    def __init__(self, config):
-        # 各種定数（隠れ層次元、語彙数）
-        hidden_size = config.hidden_size
-        vocab_size = config.vocab_size
+    def __init__(self, config=None, yaml_path=None, weight_path=None):
+        if config is not None:
+            # 各種定数（隠れ層次元、語彙数）
+            hidden_size = config.hidden_size
+            vocab_size = config.vocab_size
 
-        # Dropout処理の設定
-        use_dropout =  config.keep_prob < 1
-        keep_prob = config.keep_prob
+            # Dropout処理の設定
+            use_dropout =  config.keep_prob < 1
+            keep_prob = config.keep_prob
 
-        # モデル構築
-        m = Sequential()
-        _add_embedding_layer(m, vocab_size, hidden_size,
-                             use_dropout, keep_prob)
-        _add_rnn_layer(m, hidden_size, config.num_layers,
-                       use_dropout, keep_prob, config.rnn_cell)
-        _add_softmax(m, vocab_size)
+            # モデル構築
+            m = Sequential()
+            _add_embedding_layer(m, vocab_size, hidden_size,
+                                 use_dropout, keep_prob)
+            _add_rnn_layer(m, hidden_size, config.num_layers,
+                           use_dropout, keep_prob, config.rnn_cell)
+            _add_softmax(m, vocab_size)
+
+        elif yaml_path is not None:
+            # load model structure to YAML file
+            f = open(yaml_path, 'r')
+            m = model_from_yaml(f.read())
+            f.close()
+
+            # load model weights to HDF5 file
+            m.load_weights(weight_path)
 
         optimizer = SGD(lr=config.learning_rate, clipnorm=config.max_grad_norm)
         m.compile(loss='sparse_categorical_crossentropy', optimizer=optimizer)

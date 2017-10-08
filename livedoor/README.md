@@ -11,6 +11,7 @@ livedoorニュースコーパスから日本語言語モデルを学習。
 以下のバージョンで検証済
 - python: 3.6
 - numpy: 1.13.1
+- mecab-python3: 0.6
 - Tensorflow: tensorflow-gpu=1.2.1
 
 ## learning
@@ -23,7 +24,7 @@ python ./make_livedoor_data.py > ./data/livedoor/make_livedoor_data.out
 # ディレクトリ作成（作成済みの場合は省略）
 mkdir ./log
 mkdir ./log/livedoor
-# mkdir ./model
+mkdir ./model
 
 # 学習スクリプト実行
 python ./livedoor/learn.py &
@@ -45,3 +46,6 @@ cat ./log/livedoor/gentext.txt
 python ./livedoor/likelihood.py
 cat ./log/livedoor/likelihood.txt
 ```
+
+## 学習の様子
+https://github.com/kkondo1981/rnn-lang-model/issues/2

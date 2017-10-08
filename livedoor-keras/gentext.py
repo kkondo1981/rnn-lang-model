@@ -60,8 +60,7 @@ def generate_sentence(model, num_steps, temperature=1.0, end='。'):
     output = []
 
     while True:
-        y = model.model.predict(x)
-        probs = np.reshape(y[0][num_steps - 1], y.shape[2])
+        probs = model.calc_next_word_prob(x)
         word_id = sample(probs, temperature)
         word = id_to_word[word_id]
 

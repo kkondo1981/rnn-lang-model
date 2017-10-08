@@ -109,6 +109,12 @@ class RNNLanguageModel(object):
         self._model.save_weights(prefix + '_nn_weights.hdf5')
 
 
+    def calc_next_word_prob(self, x):
+        # x should have the shape (1, num_steps)
+        y = self._model.predict(x)
+        return np.reshape(y[0][num_steps - 1], y.shape[2])
+
+
     # accessors
 
     @property

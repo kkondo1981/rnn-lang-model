@@ -112,8 +112,8 @@ class RNNLanguageModel(object):
 
 
     def calc_next_word_prob(self, x):
-        # x should have the shape (1, num_steps)
-        y = self._model.predict(x)
+        # x should have word id array with length num_steps
+        y = self._model.predict(np.reshape(x, (1, len(x))))
         num_steps = y.shape[1]
         return np.reshape(y[0, num_steps - 1], y.shape[2])
 

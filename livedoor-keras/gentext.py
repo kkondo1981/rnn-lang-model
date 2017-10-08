@@ -55,7 +55,6 @@ def is_ascii(char):
 
 def generate_sentence(model, num_steps, temperature=1.0, end='。'):
     x = np.array([eos_id] * num_steps)
-    x = np.reshape(x, (1, num_steps))
 
     output = []
 
@@ -75,8 +74,8 @@ def generate_sentence(model, num_steps, temperature=1.0, end='。'):
         output.append(word)
         print(word, end='', flush=True)
 
-        x[0, :-1] = x[0, 1:]
-        x[0, num_steps - 1] = word_id
+        x[:-1] = x[1:]
+        x[num_steps - 1] = word_id
 
     return ''.join(output) + end
 

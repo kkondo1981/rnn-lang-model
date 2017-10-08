@@ -53,8 +53,8 @@ def is_ascii(char):
     return ord(char) < 128
 
 
-def generate_sentence(model, num_steps, temperature=1.0, end='。'):
-    x = np.array([eos_id] * num_steps)
+def generate_sentence(model, temperature=1.0, end='。'):
+    x = [eos_id]
 
     output = []
 
@@ -74,8 +74,7 @@ def generate_sentence(model, num_steps, temperature=1.0, end='。'):
         output.append(word)
         print(word, end='', flush=True)
 
-        x[:-1] = x[1:]
-        x[num_steps - 1] = word_id
+        x = x + [word_id]
 
     return ''.join(output) + end
 
@@ -95,5 +94,5 @@ if __name__ == "__main__":
             f.write('\n\n============================================================\n')
             f.write('** generated with temperature {:.2f} **\n'.format(temperature))
             for _ in range(10):
-                output = generate_sentence(m, config.num_steps, temperature)
+                output = generate_sentence(m, temperature)
                 f.write(output + '\n')

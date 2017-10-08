@@ -58,15 +58,15 @@ def w2id(word):
     return word_to_id[word]
 
 
-def calc_loglik(model, num_steps, words, state=None, eos=True):
+def calc_loglik(model, words, state=None, eos=True):
     lk = 0.0
-    x = [eos_id] * num_steps
+    x = [eos_id]
     probs = model.calc_next_word_prob(x)
 
     for word in words:
         word_id = w2id(word)
         lk += math.log(probs[word_id] + 1e-10)
-        x = x[1:] + [word_id]
+        x = x + [word_id]
         probs = model.calc_next_word_prob(x)
 
     if eos:
@@ -79,15 +79,15 @@ def count(x, y):
     return sum([1 for z in x if z == y])
 
 
-def search_patterns(model, num_steps, words):
-    x = [eos_id] * num_steps
+def search_patterns(model, words):
+    x = [eos_id]
     probs = model.calc_next_word_prob(x)
 
     word_id = w2id(words[0])
     cand = [words[0]]
     cand_by_id = x + [word_id]
     loglik = math.log(probs[word_id] + 1e-10)
-    probs = model.calc_next_word_prob(cand_by_id[-num_steps:])
+    probs = model.calc_next_word_prob(cand_by_id)
 
     cands = [(cand, cand_by_id, loglik, probs)]
     for _ in range(len(words) - 1):
@@ -99,13 +99,13 @@ def search_patterns(model, num_steps, words):
                     new_cand = cand + [word]
                     new_cand_by_id = cand_by_id + [word_id]
                     new_loglik = loglik + math.log(probs[word_id] + 1e-10)
-                    new_probs = model.calc_next_word_prob(new_cand_by_id[-num_steps:])
+                    new_probs = model.calc_next_word_prob(new_cand_by_id)
                     if len(new_cand) == len(words):
                         new_loglik = new_loglik + math.log(new_probs[eos_id] + 1e-10)
                         new_probs = None
                     new_cands.append((new_cand, new_cand_by_id, new_loglik, new_probs))
         new_cands = sorted(new_cands, key=lambda x: -x[2])
-        cands = new_cands[:20]
+        cands = new_cands[:50]
 
         print('============================================================\n', flush=True)
         for cand, _, loglik, _ in cands:
@@ -135,9 +135,9 @@ if __name__ == "__main__":
     # 尤度の高い単語の並び順を探索
     print('Searching likely patterns..', flush=True)
     words = tokenize(SEED_SENTENCE)
-    patterns = search_patterns(m, config.num_steps, words)
+    patterns = search_patterns(m, words)
     if SEED_SENTENCE not in [x[0] for x in patterns]:
-        patterns.append((SEED_SENTENCE, calc_loglik(m, config.num_steps, words)))
+        patterns.append((SEED_SENTENCE, calc_loglik(m, words)))
         patterns = sorted(patterns, key=lambda x: -x[1])
 
     # ファイルへの出力

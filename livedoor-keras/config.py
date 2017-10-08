@@ -24,7 +24,7 @@ The hyperparameters used in the model:
 
 class MediumConfig(object):
     """Medium config."""
-    init_scale = 0.05
+    # init_scale = 0.05  # use default initializer of keras
     learning_rate = 1.0
     max_grad_norm = 5
     num_layers = 2

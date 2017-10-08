@@ -2,14 +2,14 @@
 """
 RNN言語モデルによる文章生成
 
-[Usage] python ./livedoor/gentext.py
+[Usage] python ./livedoor-keras/gentext.py
 - 実行前にlearn.pyでモデルを学習・保存しておくこと。
 
 実行時のディレクトリ構成は、下記想定:
 ```
  current dir(*)
 ｜
-├── livedoor
+├── livedoor-keras
 ｜   └── gentext.py    : this script
 ｜
 └── model              : model dir

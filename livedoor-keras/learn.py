@@ -58,7 +58,7 @@ if __name__ == "__main__":
     valid_input = Input(config, valid_data)
     test_input = Input(config, test_data)
 
-    start_time = time.time()
+    # wps(word per sec.)計算用
     total_words = train_input.x.shape[0] * config.num_steps
 
     # 学習実行
@@ -84,8 +84,6 @@ if __name__ == "__main__":
 
     perp = calc_perplexity(m.model, test_input, config.batch_size)
     print('Test Perplexity: {:.3f}'.format(perp), flush=True)
-    wps = total_words * config.max_epoch / (time.time() - start_time)
-    print('speed: {:.0f} wps'.format(wps), flush=True)
 
     print('Saving model to {}.'.format(SAVE_PATH))
     m.save(SAVE_PATH + 'livedoor-keras')

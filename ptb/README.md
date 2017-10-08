@@ -34,10 +34,10 @@ Test, Train, Valid用データのサイズはそれぞれ以下の通り。
 ## learning
 
 ```
-# データセット作成
+# データセット作成（初回のみ）
 ./dl-ptb.sh
 
-# ディレクトリ作成（初回のみ）
+# ディレクトリ作成（作成済みの場合は省略）
 mkdir ./log
 mkdir ./log/ptb
 mkdir ./model
